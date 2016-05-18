@@ -134,7 +134,7 @@ class MultiLayerPerceptron(Sequential):
 
     def defaultLearningParameters(self,param_dict):
         ret=dict(param_dict)
-        default_values={'batch_size':1, 'learning_rate':1.0, 'epochs':100, 'growth_factor':1.25, 'growth_threshold':5, 'badmove_threshold':10, 'verbose':True}
+        default_values={'batch_size':1, 'learning_rate':1.0, 'epochs':100, 'growth_factor':1.1, 'growth_threshold':5, 'badmove_threshold':10, 'verbose':True}
         for key in default_values.keys():
             if not(param_dict.has_key(key)):
                 ret[key]=default_values[key]
@@ -212,6 +212,7 @@ class MultiLayerPerceptron(Sequential):
 
                 new_mean_loss = np.mean(loss_by_batch)
                 self.finetune_full_history.append((epoch,learning_rate,new_mean_loss))
+                learning_rate = learning_rate / growth_factor
 
                 if self.checkBadmoveHook(locals()):
                     break
@@ -221,13 +222,14 @@ class MultiLayerPerceptron(Sequential):
                     break
 
                 if badmoves+1<badmove_threshold:
-                    if(verbose):
-                        print "\r# Bad move %f < %f; Learning rate : %f --> %f" % (mean_loss, new_mean_loss, learning_rate, learning_rate/growth_factor)
-                    restore()
-                    learning_rate = learning_rate/growth_factor
-                    train = self.trainFunction(
-                        batch_size, learning_rate,True,
-                        shared_x_train, shared_y_train)
+                    #if(verbose):
+                    #    print "\r# Bad move %f < %f; Learning rate : %f --> %f" % (mean_loss, new_mean_loss, learning_rate, learning_rate/growth_factor)
+                    #restore()
+                    #learning_rate = learning_rate/growth_factor
+                    #train = self.trainFunction(
+                    #    batch_size, learning_rate,True,
+                    #    shared_x_train, shared_y_train)
+                    pass
                 else:
                     if(verbose):
                         print("\r# Break Epoch on bad move threshold")
@@ -238,14 +240,14 @@ class MultiLayerPerceptron(Sequential):
             mean_loss = new_mean_loss
             self.finetune_history.append(mean_loss)
 
-            if(good_epochs >= growth_threshold):
-                good_epochs = 0
-                if(verbose):
-                    print "\r# Fast Track; Learning rate : %f > %f" % (learning_rate, learning_rate*growth_factor)
-                learning_rate = learning_rate*growth_factor
-                train = self.trainFunction(
-                    batch_size, learning_rate, True,
-                    shared_x_train, shared_y_train)
+            #if(good_epochs >= growth_threshold):
+            #    good_epochs = 0
+            #    if(verbose):
+            #        print "\r# Fast Track; Learning rate : %f > %f" % (learning_rate, learning_rate*growth_factor)
+            #    learning_rate = learning_rate*growth_factor
+            #    train = self.trainFunction(
+            #        batch_size, learning_rate, True,
+            #        shared_x_train, shared_y_train)
 
             if(verbose):
                 print "\r  |_Epoch %d/%d, mean loss : %f, duration (s) : %s" % (epoch+1, epochs, new_mean_loss,(DT.datetime.now()-epoch_start_time).total_seconds())
